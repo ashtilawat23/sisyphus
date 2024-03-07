@@ -18,6 +18,9 @@ setup(
         'transformers>=4.0.0',  # Hugging Face's Transformers, for state-of-the-art NLP models
         # Add any other dependencies your package might need
     ],
+    extras_require={
+        'test': ['pytest>=6.0.0'],
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
