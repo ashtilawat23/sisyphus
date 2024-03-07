@@ -1,5 +1,8 @@
 import pandas as pd
 from sisyphus.agents.base import NarrowTaskAgent
+from langchain.llms import OpenAI
+from langchain.embeddings import SentenceTransformers 
+from sklearn.metrics.pairwise import cosine_similarity
 
 class DataCleaningAgent(NarrowTaskAgent):
     """
@@ -8,8 +11,20 @@ class DataCleaningAgent(NarrowTaskAgent):
 
     def __init__(self, name, task_specific_parameter=None):
         super().__init__(name, task="Data Cleaning", task_specific_parameter=task_specific_parameter)
-
     
+    def normalize_text(self, text):
+        """Normalize text using a language model."""
+        llm = OpenAI()  # Initialize the language model; ensure your API keys and permissions are set
+        normalized_text = llm.complete(prompt=f"Normalize this text: {text}")
+        return normalized_text
+
+    def are_semantically_similar(self, text1, text2, threshold=0.8):
+        """Check if two texts are semantically similar."""
+        embedder = SentenceTransformers()
+        embedding1, embedding2 = embedder.embed([text1, text2])
+        similarity = cosine_similarity([embedding1], [embedding2])[0][0]
+        return similarity > threshold
+
     def clean_data(self, df):
         """
         Perform a series of data cleaning operations on the provided DataFrame.

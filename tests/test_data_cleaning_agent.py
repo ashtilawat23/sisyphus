@@ -38,3 +38,22 @@ def test_evaluate_performance(agent):
     cleaned_data = agent.clean_data(original_data)
     result = agent.evaluate_performance(original_data, cleaned_data)
     assert "successful" in result, "Data cleaning was not successful according to evaluate_performance"
+
+def test_text_normalization(agent, monkeypatch):
+    def mock_normalize_text(text):
+        return text.upper()  # Example: normalize by converting to uppercase
+    monkeypatch.setattr(agent, 'normalize_text', mock_normalize_text)
+
+    df = pd.DataFrame({'TextColumn': ['text', 'TEXT', 'Text']})
+    cleaned_df = agent.clean_data(df)
+    assert cleaned_df['TextColumn'].equals(pd.Series(['TEXT', 'TEXT', 'TEXT'])), "Text normalization failed"
+
+def test_semantic_deduplication(agent, monkeypatch):
+    def mock_are_semantically_similar(text1, text2, threshold=0.8):
+        return text1.lower() == text2.lower()  # Example: consider texts similar if they are the same ignoring case
+    monkeypatch.setattr(agent, 'are_semantically_similar', mock_are_semantically_similar)
+
+    df = pd.DataFrame({'TextColumn': ['duplicate', 'Duplicate', 'unique']})
+    cleaned_df = agent.clean_data(df)
+    assert len(cleaned_df) == 2, "Semantic deduplication failed"
+    assert 'Duplicate' not in cleaned_df['TextColumn'].values, "Duplicate was not removed"
